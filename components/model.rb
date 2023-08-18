@@ -15,7 +15,7 @@ def getUserByUsername(username)
     user = db.execute("SELECT * FROM users WHERE username=?", username).first || nil
     return user
 end
-
+#test
 #create user with username and password, return status code 200 if user created, and userId
 def createUser(username, password)
     status = 200
