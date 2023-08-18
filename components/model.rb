@@ -17,10 +17,14 @@ def getUserByUsername(username)
 end
 #test
 #create user with username and password, return status code 200 if user created, and userId
-def createUser(username, password)
+def createUser(username, password, passwordConfirm)
     status = 200
     db = connectToDb()
     user = getUserByUsername(username)
+
+    if password != passwordConfirm
+        return status = 400
+    end
 
     if user 
         return status = 400
@@ -31,6 +35,21 @@ def createUser(username, password)
       "INSERT INTO users (username, passwordDigest) VALUES (?, ?);",
       [username.downcase, passwordDigest]
     )
+    userId = user["id"]
+
+    return status, userId 
+end
+
+def loginUser(username, password)
+    status = 200
+    db = connectToDb()
+
+    user = getUserByUsername(username)
+
+    if BCrypt::Password.new(user["passwordDigest"]) != password 
+        return status = 400
+    end
+
     userId = user["id"]
 
     return status, userId 

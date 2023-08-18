@@ -1,0 +1,19 @@
+body#body-auth
+    #auth-container
+        button type="button" id="button-change-form" Sign up
+
+        #form-container
+        form action="/login" method="post" id="form-login"
+            label for="username" Namn
+            input type="text" name="username" placeholder="Namn"
+            label for="pwd" Lösenord
+            input type="text" name="password" placeholder="Lösenord"
+            button type="submit" sign in
+        form action="/register" method="post" id="form-signup"
+            label for="username" Namn
+            input type="text" name="username" placeholder="Namn"
+            label for="pwd" Lösenord
+            input type="password" name="password" placeholder="Lösenord"
+            label for="repwd" Upprepa lösenord
+            input type="password" name="passwordConfirm" placeholder="Upprepa lösenord"
+            button type="submit" register

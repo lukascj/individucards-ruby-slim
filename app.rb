@@ -11,21 +11,30 @@ enable :sessions
 set :port, 3000
 
 # Om användaren besöker rotmappen, omdirigera dem till inloggningsidan
-get('/') { redirect('/login')}
+get('/') { redirect('/auth')}
 
 # Visar inloggningsformuläret när användaren besöker /login
-get('/login') do
-    slim(:login)
+get('/auth') do
+    slim(:auth)
 end
 
 # Hanterar POST-förfrågning från inloggningsformuläret
 post('/login') do
-    # (Koden för att hantera inloggning verkar saknas här)
-end
+    if session[:loggedIn]
+        session.delete("loggedIn")
+    end
 
-# Visar registreringsformuläret när användaren besöker /register
-get('/register') do 
-    slim(:register)
+    username = params[:username]
+    password = params[:password]
+
+    status, userId = loginUser(username, password)
+
+    if status == 200
+        session[:loggedIn] = userId
+        redirect('/start')
+    end
+
+    redirect('/error')
 end
 
 # Hanterar POST-förfrågning från registreringsformuläret
@@ -36,21 +45,25 @@ post('/register') do
     
     username = params[:username]
     password = params[:password]
+    passwordConfirm = params[:passwrodConfirm]
     
-    status, userId = createUser(username, password)    
+    status, userId = createUser(username, password, passwordConfirm)    
     
     
     if status == 200
         session[:loggedIn] = userId
-        redirect('/game')
+        redirect('/start')
     end
     
     redirect('/error')
     
-    
-    # Visar en felmeddelandesida när användaren besöker /error
-    get('/error') do
-        slim(:error)
-    end
 end
-    
+
+# Visar en felmeddelandesida när användaren besöker /error
+get('/error') do
+    slim(:error)
+end
+
+get('/start') do
+    slim(:start)
+end
