@@ -8,6 +8,7 @@ require_relative './components/model.rb'
 
 # Aktiverar sessioner för att lagra användarinformation mellan förfrågningar
 enable :sessions
+set :port, 3000
 
 # Om användaren besöker rotmappen, omdirigera dem till inloggningsidan
 get('/') { redirect('/login')}
