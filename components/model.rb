@@ -4,7 +4,7 @@ require 'sqlite3'
 
 #Connect to the database
 def connectToDb()
-    db = SQLite3::Database.new("db/new.db")
+    db = SQLite3::Database.new("../db/warcardsdb.db")
     db.results_as_hash = true
     return db
 end
@@ -15,7 +15,7 @@ def getUserByUsername(username)
     user = db.execute("SELECT * FROM users WHERE username=?", username).first || nil
     return user
 end
-#test
+
 #create user with username and password, return status code 200 if user created, and userId
 def createUser(username, password, passwordConfirm)
     status = 200
@@ -53,4 +53,24 @@ def loginUser(username, password)
     userId = user["id"]
 
     return status, userId 
+end
+
+# Get all users ranked by hs from highest to lowest, return array of users
+def fetchSortedUsersbyHs()
+
+    db = connectToDb()
+
+    sortedUsersbyHs = db.execute("SELECT * FROM users ORDER BY highscore DESC")
+
+    return sortedUsersbyHs
+end
+
+# Get all cards, return array of cards with cardId, name, img_url
+def fetchCards()
+
+    db = connectToDb()
+
+    cards = db.execute("SELECT * FROM cards")
+
+    return cards
 end

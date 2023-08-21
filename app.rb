@@ -64,6 +64,11 @@ get('/error') do
     slim(:error)
 end
 
+# start sida / leaderboard
 get('/start') do
-    slim(:start)
+    slim(:start, locals: { sortedUsers: fetchSortedUsersbyHs() })
+end
+
+get('/game') do 
+    slim(:game, locals: { cards: fetchCards() })
 end
