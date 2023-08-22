@@ -7,8 +7,19 @@ require 'sqlite3'
 require_relative './components/model.rb'
 
 # Aktiverar sessioner för att lagra användarinformation mellan förfrågningar
+key = SecureRandom.hex(32)
 enable :sessions
-set :port, 3000
+set :session_secret, key
+set :sessions, :expire_after => 2592000
+
+before do
+    protectedRoutes = ["/start", "/game"]
+    if protectedRoutes.include?(request.path_info)
+      if !session[:loggedIn]
+        redirect("/auth")
+      end
+    end
+end
 
 # Om användaren besöker rotmappen, omdirigera dem till inloggningsidan
 get('/') { redirect('/auth')}
@@ -27,10 +38,10 @@ post('/login') do
     username = params[:username]
     password = params[:password]
 
-    status, userId = loginUser(username, password)
+    status, user = loginUser(username, password)
 
     if status == 200
-        session[:loggedIn] = userId
+        session[:loggedIn] = user
         redirect('/start')
     end
 
@@ -47,11 +58,11 @@ post('/register') do
     password = params[:password]
     passwordConfirm = params[:passwrodConfirm]
     
-    status, userId = createUser(username, password, passwordConfirm)    
+    status, user = createUser(username, password, passwordConfirm)    
     
     
     if status == 200
-        session[:loggedIn] = userId
+        session[:loggedIn] = user
         redirect('/start')
     end
     
@@ -66,9 +77,23 @@ end
 
 # start sida / leaderboard
 get('/start') do
-    slim(:start, locals: { sortedUsers: fetchSortedUsersbyHs() })
+    sortedUsers = fetchSortedUsersbyHs()
+
+    # userRanking = sortedUsers.index { |user| user["username"] == your_username }
+
+    slim(:start, locals: { sortedUsers: sortedUsers })
 end
 
 get('/game') do 
-    slim(:game, locals: { cards: fetchCards() })
+    cardsJSON, randCards = fetchCards()
+    slim(:game, locals: { cardsJSON: cardsJSON, randCards: randCards })
 end
+
+post('/game') do
+    request.body.rewind
+    data = JSON.parse(request.body.read)
+    score = data['score']
+    
+    p score
+    redirect('/start')
+  end

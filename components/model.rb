@@ -1,10 +1,11 @@
 require 'sinatra'
 require 'bcrypt'
 require 'sqlite3'
+require 'json'
 
 #Connect to the database
 def connectToDb()
-    db = SQLite3::Database.new("../db/warcardsdb.db")
+    db = SQLite3::Database.new("./db/warcardsdb.db")
     db.results_as_hash = true
     return db
 end
@@ -35,9 +36,9 @@ def createUser(username, password, passwordConfirm)
       "INSERT INTO users (username, passwordDigest) VALUES (?, ?);",
       [username.downcase, passwordDigest]
     )
-    userId = user["id"]
+    user = user
 
-    return status, userId 
+    return status, user
 end
 
 def loginUser(username, password)
@@ -46,13 +47,17 @@ def loginUser(username, password)
 
     user = getUserByUsername(username)
 
-    if BCrypt::Password.new(user["passwordDigest"]) != password 
+    # if BCrypt::Password.new(user["passwordDigest"]) != password 
+    #     return status = 400
+    # end
+
+    if password != user["passwordDigest"]
         return status = 400
     end
 
-    userId = user["id"]
+    user = user
 
-    return status, userId 
+    return status, user 
 end
 
 # Get all users ranked by hs from highest to lowest, return array of users
@@ -72,5 +77,9 @@ def fetchCards()
 
     cards = db.execute("SELECT * FROM cards")
 
-    return cards
+    randCards = cards.shuffle    
+
+    cardsJSON = randCards.to_json
+
+    return cardsJSON, randCards
 end
