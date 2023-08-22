@@ -1,13 +1,3 @@
-/ - user_ranking = sortedUsers.index { |user| user["username"] == your_username }
-
-/ - if user_ranking.nil? || user_ranking >= 10
-/   - user_ranking = "none"
-
-/ - if user_ranking >= 0
-/   - user_ranking_message = "Your ranking: #{user_ranking + 1}"
-/   - user_username_message = "Your username: #{your_username}"
-/   - user_highscore_message = "Your highscore: #{your_highscore}"
-
 body#body-start
   section#section-leaderboard 
     #leaderboard
@@ -25,7 +15,7 @@ body#body-start
               td= user["username"]
               td= user["highscore"]
   section#section-play
-    #user-score-current
+    #user-score-current = current_score
     #play-container
       button#button-play[type="button" onclick="redirect('game')"] Play!
   footer
@@ -36,16 +26,3 @@ javascript:
   function redirect(destination) {
     window.location.href = '/' + destination;
   }
-
-
-/   .user-score
-/     h2 Your Score
-/     p
-/       | Your ranking: 
-/       strong= user_ranking + 1
-/     p
-/       | Your username: 
-/       strong= your_username
-/     p
-/       | Your highscore: 
-/       strong= your_highscore

@@ -23,20 +23,30 @@ def createUser(username, password, passwordConfirm)
     db = connectToDb()
     user = getUserByUsername(username)
 
+    if username.empty? or password.empty?
+        session.delete("error")
+        session[:error] = "Please fill in all fields"
+        return status = 400
+    end
+
     if password != passwordConfirm
+        session.delete("error")
+        session[:error] = "Confirmation password is incorrect"
         return status = 400
     end
 
     if user 
+        session.delete("error")
+        session[:error] = "User already exists"
         return status = 400
     end
 
     passwordDigest = BCrypt::Password.create(password)
     db.execute(
-      "INSERT INTO users (username, passwordDigest) VALUES (?, ?);",
-      [username.downcase, passwordDigest]
+      "INSERT INTO users (username, passwordDigest) VALUES (?, ?);",[username.downcase, passwordDigest]
     )
-    user = user
+
+    user = getUserByUsername(username)
 
     return status, user
 end
@@ -47,15 +57,21 @@ def loginUser(username, password)
 
     user = getUserByUsername(username)
 
-    # if BCrypt::Password.new(user["passwordDigest"]) != password 
-    #     return status = 400
-    # end
-
-    if password != user["passwordDigest"]
+    if password == "" || username == ""
+        session.delete("error")
+        session[:error] = "please fill in all required fields"
         return status = 400
     end
 
-    user = user
+    if !user
+        session[:error] = "wrong username or password"
+        return status = 400
+    end
+
+    if BCrypt::Password.new(user["passwordDigest"]) != password 
+        session[:error] = "wrong username or password"
+        return status = 400
+    end
 
     return status, user 
 end
@@ -82,4 +98,14 @@ def fetchCards()
     cardsJSON = randCards.to_json
 
     return cardsJSON, randCards
+end
+
+def updateScore(score)
+    db = connectToDb()
+
+    user_highscore = db.execute("SELECT highscore FROM users WHERE username = ?", session[:loggedIn]["username"]).first
+
+    if score.to_i > user_highscore["highscore"].to_i
+      db.execute("UPDATE users SET highscore = ? WHERE username = ?", score, session[:loggedIn]["username"])
+    end  
 end

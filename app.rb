@@ -4,6 +4,7 @@ require 'slim'
 require 'rerun'
 require 'bcrypt'
 require 'sqlite3'
+require 'json'
 require_relative './components/model.rb'
 
 # Aktiverar sessioner för att lagra användarinformation mellan förfrågningar
@@ -13,6 +14,10 @@ set :session_secret, key
 set :sessions, :expire_after => 2592000
 
 before do
+    response.headers['Access-Control-Allow-Origin'] = 'http://localhost:4567'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+
     protectedRoutes = ["/start", "/game"]
     if protectedRoutes.include?(request.path_info)
       if !session[:loggedIn]
@@ -26,15 +31,19 @@ get('/') { redirect('/auth')}
 
 # Visar inloggningsformuläret när användaren besöker /login
 get('/auth') do
-    slim(:auth)
+    session.delete("loggedIn")
+
+    if session[:error]
+        error = session[:error]
+      else
+        error = nil
+    end
+
+    slim(:auth, locals: {error: error})
 end
 
 # Hanterar POST-förfrågning från inloggningsformuläret
 post('/login') do
-    if session[:loggedIn]
-        session.delete("loggedIn")
-    end
-
     username = params[:username]
     password = params[:password]
 
@@ -45,7 +54,7 @@ post('/login') do
         redirect('/start')
     end
 
-    redirect('/error')
+    redirect('/auth')
 end
 
 # Hanterar POST-förfrågning från registreringsformuläret
@@ -53,21 +62,20 @@ post('/register') do
     if session[:loggedIn]
         session.delete("loggedIn")
     end
-    
+
+
     username = params[:username]
     password = params[:password]
-    passwordConfirm = params[:passwrodConfirm]
+    passwordConfirm = params[:passwordConfirm]
     
     status, user = createUser(username, password, passwordConfirm)    
-    
     
     if status == 200
         session[:loggedIn] = user
         redirect('/start')
     end
     
-    redirect('/error')
-    
+    redirect('/auth')
 end
 
 # Visar en felmeddelandesida när användaren besöker /error
@@ -78,10 +86,22 @@ end
 # start sida / leaderboard
 get('/start') do
     sortedUsers = fetchSortedUsersbyHs()
+    db = connectToDb()
+    user = Hash.new
 
-    # userRanking = sortedUsers.index { |user| user["username"] == your_username }
+    userRanking = sortedUsers.index { |user| user["username"] == session[:loggedIn]["username"] }
 
-    slim(:start, locals: { sortedUsers: sortedUsers })
+    user["ranking"] = userRanking + 1
+
+    user_highscore = db.execute("SELECT highscore FROM users WHERE username = ?", session[:loggedIn]["username"]).first
+
+    user["highscore"] = user_highscore["highscore"]
+
+    user["username"] = session[:loggedIn]["username"]
+
+    current_score = session[:score] || 0
+
+    slim(:start, locals: { sortedUsers: sortedUsers, current_score: current_score, user: user })
 end
 
 get('/game') do 
@@ -94,6 +114,14 @@ post('/game') do
     data = JSON.parse(request.body.read)
     score = data['score']
     
-    p score
-    redirect('/start')
-  end
+    session[:score] = score
+
+    updateScore(score)  
+
+    content_type :json
+    { message: "Score received successfully", received_score: score, status: 200 }.to_json
+end
+
+post("/logout") do
+    session.delete("loggedIn")
+end

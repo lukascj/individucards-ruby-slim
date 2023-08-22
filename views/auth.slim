@@ -3,7 +3,7 @@ body#body-auth
         .button-wrapper
             button#form-switch[type="button"] Gå med
         #form-container
-            form#form-login action="/login" method="post"
+ form#form-login action="/login" method="post"
                 .row-wrapper
                     label for="username" Namn
                     input type="text" name="username" placeholder="Namn"
@@ -13,6 +13,8 @@ body#body-auth
                 .button-wrapper
                     button type="submit" Logga in
             form#form-signup action="/register" method="post"
+                - if error != nil 
+                    p = error
                 .row-wrapper
                     label for="username" Namn
                     input type="text" name="username" placeholder="Namn"
