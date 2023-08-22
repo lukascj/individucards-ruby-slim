@@ -1,17 +1,40 @@
 body#body-auth
     #auth-container
+        .button-wrapper
+            button#form-switch[type="button"] Gå med
         #form-container
-        form action="/login" method="post" id="form-login"
-            label for="username" Namn
-            input type="text" name="username" placeholder="Namn"
-            label for="pwd" Lösenord
-            input type="text" name="password" placeholder="Lösenord"
-            button type="submit" sign in
-        form action="/register" method="post" id="form-signup"
-            label for="username" Namn
-            input type="text" name="username" placeholder="Namn"
-            label for="pwd" Lösenord
-            input type="password" name="password" placeholder="Lösenord"
-            label for="repwd" Upprepa lösenord
-            input type="password" name="passwordConfirm" placeholder="Upprepa lösenord"
-            button type="submit" register
+            form#form-login action="/login" method="post"
+                .row-wrapper
+                    label for="username" Namn
+                    input type="text" name="username" placeholder="Namn"
+                .row-wrapper
+                    label for="pwd" Lösenord
+                    input type="text" name="password" placeholder="Lösenord"
+                .button-wrapper
+                    button type="submit" Logga in
+            form#form-signup action="/register" method="post"
+                .row-wrapper
+                    label for="username" Namn
+                    input type="text" name="username" placeholder="Namn"
+                .row-wrapper
+                    label for="pwd" Lösenord
+                    input type="password" name="password" placeholder="Lösenord"
+                .row-wrapper
+                    label for="repwd" Upprepa lösenord
+                    input type="password" name="passwordConfirm" placeholder="Upprepa lösenord"
+                .button-wrapper
+                    button type="submit" Gå med
+    javascript: 
+        const form_switch = document.getElementById('form-switch');
+        form_switch.addEventListener('click', () => {
+            const form_cont = document.getElementById('form-container');
+            if(form_cont.classList.contains('switch')) {
+                form_switch.innerHTML = "Gå med";
+                form_cont.classList.remove('switch');
+            } else {
+                form_switch.innerHTML = "Logga in";
+                form_cont.classList.add('switch');
+            }
+ 
+        });
+        

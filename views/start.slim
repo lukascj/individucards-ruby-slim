@@ -8,27 +8,30 @@
 /   - user_username_message = "Your username: #{your_username}"
 /   - user_highscore_message = "Your highscore: #{your_highscore}"
 
-
-.start-wrapper
-  .leaderboard
-    h1.leaderboard-header Leaderboard
-    table
-      thead
-        tr
-          th Rank
-          th Name
-          th Highscore
-
-      tbody
-        - sortedUsers[0...10].each_with_index do |user, index|
+body#body-start
+  section#section-leaderboard 
+    #leaderboard
+      h1 Leaderboard
+      table
+        thead
           tr
-            td= index + 1
-            td= user["username"]
-            td= user["highscore"]
-
-  .start-container
-    button.start-button type="button" onclick="redirect('game')" Play!
-
+            th Rank
+            th Name
+            th Highscore
+        tbody
+          - sortedUsers[0...10].each_with_index do |user, index|
+            tr
+              td= index + 1
+              td= user["username"]
+              td= user["highscore"]
+  section#section-play
+    #user-score-current
+    #play-container
+      button#button-play[type="button" onclick="redirect('game')"] Play!
+  footer
+    #username
+    #user-hi
+    #user-ranking
 javascript:
   function redirect(destination) {
     window.location.href = '/' + destination;

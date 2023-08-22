@@ -1,29 +1,4 @@
-.start-wrapper {
-    height: 100%;
-    width: 100%;
-    display: flex;
-    justify-content: space-evenly;
-    align-items: center;
-}
-
-.start-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 150px;
-    height: 150px;
-    background-color: rgb(96, 96, 234);
-}
-
-.start-button {
-    width: 90px;
-    height: 40px;
-    border: none;
-}
-
-
-
-/*  ---------------- LUKAS ------------------ */
+/* ----------------- GENERAL ----------------- */
 
 * {
     margin: 0;
@@ -48,23 +23,17 @@ ul {
     display: none;
 }
 
-#body-auth {
-    height: 100vh;
-    background-color: var(--color1);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
 button {
-    width: 6rem;
+    width: 6.8rem;
     min-width: max-content;
     max-width: 100%;
     height: 2rem;
     border: 2px var(--color1) solid;
     border-radius: 4px;
-    background-color: white;
+    background-color: whitesmoke;
     font: 400 1rem 'Oswald', sans-serif;
+    padding: 0 1rem 0 1rem;
+    transition: background-color ease 0.4s;
 }
 
 input {
@@ -73,44 +42,121 @@ input {
     border: 2px var(--color1) solid;
     border-radius: 4px;
     padding: 1rem;
+    background-color: whitesmoke;
     font: 400 1rem 'Oswald', sans-serif;
+    transition: background-color ease 0.4s;
 }
 
 input::placeholder {
     font-weight: 200;
 }
 
-label {
-    font-weight: 400;
-    font-size: 1.3rem;
-    margin: 0.8rem 0 0.4rem 0;
+button:hover, input:hover {
+    background-color: rgb(232, 215, 217);
+}
+
+/* ----------------- AUTH ----------------- */
+
+#body-auth {
+    height: 100vh;
+    background-color: var(--color1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #auth-container {
+    --auth-width: 18rem;
+
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    width: 18rem;
+    width: var(--auth-width);
     height: max-content;
     padding: 2rem;
     background: linear-gradient(var(--color3), var(--color2));
     border-radius: 4px;
+    overflow: hidden;
 }
 
 #form-container {
     display: flex;
     align-items: center;
     gap: 4rem;
+    position: relative;
+    left: 0;
+    transition: left ease 0.5s;
+}
+
+#form-container.switch {
+    left: calc(var(--auth-width)*(-1));
+}
+
+#body-auth label {
+    font-weight: 400;
+    font-size: 1.3rem;
 }
 
 #form-signup, #form-login {
     display: flex;
     flex-direction: column;
+    row-gap: 0.8rem;
 }
+
+#body-auth .button-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+#body-auth .row-wrapper {
+    display: flex;
+    flex-direction: column;
+    row-gap: 0.4rem;
+}
+
+/* ----------------- START ----------------- */
+
+#body-start {
+    display: flex;
+    height: 100vh;
+    background-color: black;
+}
+
+#body-start > section {
+    width: 50%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#play-container {
+    width: max-content;
+    height: max-content;
+    padding: 5rem;
+    background-color: rgb(96, 96, 234);
+}
+
+#button-play {
+    width: 14rem;
+    height: 6rem;
+    border: none;
+    background: var(--color2);
+    transition: all ease 0.5s;
+}
+
+#button-play:hover {
+    background: linear-gradient(-135deg, var(--color3), var(--color2));
+}
+
+/* ----------------- GAME ----------------- */
 
 #body-game {
     display: flex;
     height: 100vh;
+    background-color: black;
 }
 
 #body-game > section {
@@ -119,12 +165,6 @@ label {
     display: flex;
     justify-content: center;
     align-items: center;
-}
-
-
-
-#body-game {
-    background-color: black;
 }
 
 #section-card {
