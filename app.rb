@@ -31,15 +31,19 @@ get('/') { redirect('/auth')}
 
 # Visar inloggningsformuläret när användaren besöker /login
 get('/auth') do
-    slim(:auth)
+    session.delete("loggedIn")
+
+    if session[:error]
+        error = session[:error]
+      else
+        error = nil
+    end
+
+    slim(:auth, locals: {error: error})
 end
 
 # Hanterar POST-förfrågning från inloggningsformuläret
 post('/login') do
-    if session[:loggedIn]
-        session.delete("loggedIn")
-    end
-
     username = params[:username]
     password = params[:password]
 
@@ -50,7 +54,7 @@ post('/login') do
         redirect('/start')
     end
 
-    redirect('/error')
+    redirect('/auth')
 end
 
 # Hanterar POST-förfrågning från registreringsformuläret
@@ -58,21 +62,20 @@ post('/register') do
     if session[:loggedIn]
         session.delete("loggedIn")
     end
-    
+
+
     username = params[:username]
     password = params[:password]
     passwordConfirm = params[:passwordConfirm]
     
-    status = createUser(username, password, passwordConfirm)    
-    
-    p status
+    status, user = createUser(username, password, passwordConfirm)    
     
     if status == 200
-        redirect('/auth')
+        session[:loggedIn] = user
+        redirect('/start')
     end
     
-    redirect('/error')
-    
+    redirect('/auth')
 end
 
 # Visar en felmeddelandesida när användaren besöker /error
@@ -83,19 +86,20 @@ end
 # start sida / leaderboard
 get('/start') do
     sortedUsers = fetchSortedUsersbyHs()
+    db = connectToDb()
     user = Hash.new
 
     userRanking = sortedUsers.index { |user| user["username"] == session[:loggedIn]["username"] }
 
     user["ranking"] = userRanking + 1
 
-    user["highscore"] = session[:loggedIn]["highscore"]
+    user_highscore = db.execute("SELECT highscore FROM users WHERE username = ?", session[:loggedIn]["username"]).first
+
+    user["highscore"] = user_highscore["highscore"]
 
     user["username"] = session[:loggedIn]["username"]
 
     current_score = session[:score] || 0
-
-    p user
 
     slim(:start, locals: { sortedUsers: sortedUsers, current_score: current_score, user: user })
 end
@@ -116,4 +120,8 @@ post('/game') do
 
     content_type :json
     { message: "Score received successfully", received_score: score, status: 200 }.to_json
-  end
+end
+
+post("/logout") do
+    session.delete("loggedIn")
+end

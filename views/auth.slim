@@ -8,6 +8,8 @@ body#body-auth
             input type="text" name="password" placeholder="Lösenord"
             button type="submit" sign in
         form action="/register" method="post" id="form-signup"
+            - if error != nil 
+                p = error
             label for="username" Namn
             input type="text" name="username" placeholder="Namn"
             label for="pwd" Lösenord
@@ -15,3 +17,5 @@ body#body-auth
             label for="repwd" Upprepa lösenord
             input type="password" name="passwordConfirm" placeholder="Upprepa lösenord"
             button type="submit" register
+            - if error != nil 
+                p = error
