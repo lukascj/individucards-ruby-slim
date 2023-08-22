@@ -61,14 +61,14 @@ post('/register') do
     
     username = params[:username]
     password = params[:password]
-    passwordConfirm = params[:passwrodConfirm]
+    passwordConfirm = params[:passwordConfirm]
     
-    status, user = createUser(username, password, passwordConfirm)    
+    status = createUser(username, password, passwordConfirm)    
     
+    p status
     
     if status == 200
-        session[:loggedIn] = user
-        redirect('/start')
+        redirect('/auth')
     end
     
     redirect('/error')

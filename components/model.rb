@@ -24,21 +24,21 @@ def createUser(username, password, passwordConfirm)
     user = getUserByUsername(username)
 
     if password != passwordConfirm
+        p "Passwords do not match"
         return status = 400
     end
 
     if user 
+        p user, "User already exists"
         return status = 400
     end
 
     passwordDigest = BCrypt::Password.create(password)
     db.execute(
-      "INSERT INTO users (username, passwordDigest) VALUES (?, ?);",
-      [username.downcase, passwordDigest]
+      "INSERT INTO users (username, passwordDigest) VALUES (?, ?);",[username.downcase, passwordDigest]
     )
-    user = user
 
-    return status, user
+    return status
 end
 
 def loginUser(username, password)
@@ -50,8 +50,6 @@ def loginUser(username, password)
     if BCrypt::Password.new(user["passwordDigest"]) != password 
         return status = 400
     end
-    
-    user = user
 
     return status, user 
 end
