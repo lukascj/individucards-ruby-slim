@@ -1,7 +1,7 @@
 const data_elem = document.getElementById("data");
 const cards_data = JSON.parse(data_elem.dataset.json);
 
-const other_names = [{name:'Pontus Wahlgren', kon:'m'}, {name:'Håkan Persson', kon:'m'}, {name:'Igor Rickardsson', kon:'m'}, {name:'William Fahger', kon:'m'}, {name:'Joel Ramberg Themelis', kon:'m'}]
+const other_names = [{name:'Pontus Wahlgren', kon:'m'}, {name:'Håkan Persson', kon:'m'}, {name:'Igor Rickardsson', kon:'m'}, {name:'Joel Ramberg Themelis', kon:'m'}]
 
 function redirect(destination) {
     window.location.href = '/' + destination;

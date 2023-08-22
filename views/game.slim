@@ -1,7 +1,7 @@
 #data[data-json="#{cardsJSON}"]
 body#body-game
     section#section-card
-        div#active-card
+        #active-card
             .card-face.front
                 img#card-photo[src="./img/class/#{randCards[0]['img']}.jpeg" alt="#{randCards[0]['name']}"]
             .card-face.back
@@ -11,6 +11,6 @@ body#body-game
             - randCards[0...4].shuffle.each do |card|
                 li.option = card["name"]
     footer
-        div#timer 0
-        div#score-counter == 'Score: <span id="current-score">0</span>'
+        #timer 0
+        #score-counter == 'Score: <span id="current-score">0</span>'
     script[src="./js/script.js"]

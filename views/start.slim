@@ -15,13 +15,13 @@ body#body-start
               td= user["username"]
               td= user["highscore"]
   section#section-play
-    #user-score-current = current_score
+    #user-score-recent= "Your score (recent): #{current_score}"
     #play-container
       button#button-play[type="button" onclick="redirect('game')"] Play!
   footer
-    #username
-    #user-hi
-    #user-ranking
+    #username= "Your username: #{user['username']}"
+    #user-hi= "Your high-score: #{user['highscore']}"
+    #user-ranking= "Your ranking: #{user['ranking']}"
 javascript:
   function redirect(destination) {
     window.location.href = '/' + destination;
