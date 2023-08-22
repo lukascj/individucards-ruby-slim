@@ -3,6 +3,10 @@ const cards_data = JSON.parse(data_elem.dataset.json);
 
 const other_names = [{name:'Pontus Wahlgren', kon:'m'}, {name:'Håkan Persson', kon:'m'}, {name:'Igor Rickardsson', kon:'m'}, {name:'William Fahger', kon:'m'}, {name:'Joel Ramberg Themelis', kon:'m'}]
 
+function redirect(destination) {
+    window.location.href = '/' + destination;
+}
+
 function getRandomInt(max) {
     return Math.floor(Math.random() * max);
 }
@@ -91,15 +95,6 @@ function enterPerson(cards_data, other_names, n) {
     }, 100);
 }
 
-// function seeResult() {
-//     const final_score = document.getElementById("current-score").textContent;
-//     fetch('https:localhost:4567/game', {
-//         method: 'POST',
-//         headers: { 'Content-Type': 'application/json' },
-//         body: JSON.stringify({ score: final_score })
-//     }).then().then();
-// }
-
 function seeResult() {
     const final_score = document.getElementById("current-score").textContent;
     
@@ -117,10 +112,13 @@ function seeResult() {
     .then(data => {
         // Handle the response data if needed
         console.log(data);
+        if (data.status == 200 ){
+            redirect("start")
+        } 
     })
     .catch(error => {
         // Handle errors here
-        console.error('There was a problem with the fetch operation:', error);
+        console.error(error);
     });
 }
 
@@ -157,12 +155,17 @@ function chooseOption(guess, cards_data, other_names, n) {
 
     var final_time = parseFloat(document.getElementById("timer").textContent);
     clearInterval(timer);
-    updateScore(final_time);
-    if(guess !== correct_name || n >= cards_data.length) {
+    if(guess !== correct_name) {
         pause = setTimeout(() => {
             seeResult();
         }, 1200);
     } else {
+        updateScore(final_time);
+        if(n >= cards_data.length) {
+            pause = setTimeout(() => {
+                seeResult();
+            }, 1200);
+        }   
         pause = setTimeout(() => {
             enterPerson(cards_data, other_names, n+1);
         }, 1200);

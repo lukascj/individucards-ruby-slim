@@ -4,6 +4,7 @@ require 'slim'
 require 'rerun'
 require 'bcrypt'
 require 'sqlite3'
+require 'json'
 require_relative './components/model.rb'
 
 # Aktiverar sessioner för att lagra användarinformation mellan förfrågningar
@@ -13,6 +14,10 @@ set :session_secret, key
 set :sessions, :expire_after => 2592000
 
 before do
+    response.headers['Access-Control-Allow-Origin'] = 'http://localhost:4567'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+
     protectedRoutes = ["/start", "/game"]
     if protectedRoutes.include?(request.path_info)
       if !session[:loggedIn]
@@ -78,10 +83,21 @@ end
 # start sida / leaderboard
 get('/start') do
     sortedUsers = fetchSortedUsersbyHs()
+    user = Hash.new
 
-    # userRanking = sortedUsers.index { |user| user["username"] == your_username }
+    userRanking = sortedUsers.index { |user| user["username"] == session[:loggedIn]["username"] }
 
-    slim(:start, locals: { sortedUsers: sortedUsers })
+    user["ranking"] = userRanking + 1
+
+    user["highscore"] = session[:loggedIn]["highscore"]
+
+    user["username"] = session[:loggedIn]["username"]
+
+    current_score = session[:score] || 0
+
+    p user
+
+    slim(:start, locals: { sortedUsers: sortedUsers, current_score: current_score, user: user })
 end
 
 get('/game') do 
@@ -94,6 +110,10 @@ post('/game') do
     data = JSON.parse(request.body.read)
     score = data['score']
     
-    p score
-    redirect('/start')
+    session[:score] = score
+
+    updateScore(score)  
+
+    content_type :json
+    { message: "Score received successfully", received_score: score, status: 200 }.to_json
   end

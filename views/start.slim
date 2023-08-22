@@ -1,16 +1,6 @@
-/ - user_ranking = sortedUsers.index { |user| user["username"] == your_username }
-
-/ - if user_ranking.nil? || user_ranking >= 10
-/   - user_ranking = "none"
-
-/ - if user_ranking >= 0
-/   - user_ranking_message = "Your ranking: #{user_ranking + 1}"
-/   - user_username_message = "Your username: #{your_username}"
-/   - user_highscore_message = "Your highscore: #{your_highscore}"
-
-
 .start-wrapper
   .leaderboard
+    h1 = current_score
     h1.leaderboard-header Leaderboard
     table
       thead
@@ -26,6 +16,18 @@
             td= user["username"]
             td= user["highscore"]
 
+  .user-score
+  h2 Your Score
+  p
+    | Your ranking: 
+    strong= user["ranking"]
+  p
+    | Your username: 
+    strong= user["username"]
+  p
+    | Your highscore: 
+    strong= user["highscore"]
+
   .start-container
     button.start-button type="button" onclick="redirect('game')" Play!
 
@@ -33,16 +35,3 @@ javascript:
   function redirect(destination) {
     window.location.href = '/' + destination;
   }
-
-
-/   .user-score
-/     h2 Your Score
-/     p
-/       | Your ranking: 
-/       strong= user_ranking + 1
-/     p
-/       | Your username: 
-/       strong= your_username
-/     p
-/       | Your highscore: 
-/       strong= your_highscore

@@ -47,14 +47,10 @@ def loginUser(username, password)
 
     user = getUserByUsername(username)
 
-    # if BCrypt::Password.new(user["passwordDigest"]) != password 
-    #     return status = 400
-    # end
-
-    if password != user["passwordDigest"]
+    if BCrypt::Password.new(user["passwordDigest"]) != password 
         return status = 400
     end
-
+    
     user = user
 
     return status, user 
@@ -82,4 +78,14 @@ def fetchCards()
     cardsJSON = randCards.to_json
 
     return cardsJSON, randCards
+end
+
+def updateScore(score)
+    db = connectToDb()
+
+    user_highscore = db.execute("SELECT highscore FROM users WHERE username = ?", session[:loggedIn]["username"]).first
+
+    if score.to_i > user_highscore["highscore"].to_i
+      db.execute("UPDATE users SET highscore = ? WHERE username = ?", score, session[:loggedIn]["username"])
+    end  
 end
