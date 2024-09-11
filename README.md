@@ -1,0 +1,1 @@
+Guessing game. Displays faces, and the player guesses their name by picking one of four options. Configurable. Meant to help you practice names of colleagues, but can be used as a quiz regarding fictional characters, celebrities or whatever.
