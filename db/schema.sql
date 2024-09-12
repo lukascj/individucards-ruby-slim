@@ -1,7 +1,8 @@
 CREATE TABLE users (
     id INT PRIMARY KEY,
     name TEXT,
-    pwd TEXT
+    pwd TEXT,
+    admin BOOLEAN
 );
 
 CREATE TABLE scores (
@@ -11,18 +12,22 @@ CREATE TABLE scores (
     date DATETIME
 );
 
-CREATE TABLE person (
+CREATE TABLE people (
     id INT PRIMARY KEY,
     name TEXT,
+    gender TEXT,
     img_url TEXT,
+    set_id INT
 );
 
-CREATE TABLE set (
+CREATE TABLE herrings (
     id INT PRIMARY KEY,
     name TEXT,
+    gender TEXT,
+    set_id INT
 );
 
-CREATE TABLE rel_person_set (
-    person_id INT,
-    set_id INT,
-)
+CREATE TABLE sets (
+    id INT PRIMARY KEY,
+    name TEXT
+);

@@ -1,0 +1,55 @@
+[
+    {
+        "id": 1,
+        "name": "Set 1",
+        "people": [
+            {
+                "name": "Kurt Russell",
+                "gender": "m",
+                "img_url": "https://i.pinimg.com/564x/5e/6b/07/5e6b0727a8ea07a4f640ed74e7175e35.jpg"
+            },
+            {
+                "name": "Jeff Bridges",
+                "gender": "m",
+                "img_url": "https://i.pinimg.com/564x/f4/96/df/f496dfe56c192ee168d54a4c8a2aaa0e.jpg"
+            },
+            {
+                "name": "Rebecca Ferguson",
+                "gender": "f",
+                "img_url": "https://i.pinimg.com/564x/27/e3/af/27e3aff00676ebf7fc3578d4c282e65d.jpg"
+            },
+            {
+                "name": "Brad Pitt",
+                "gender": "m",
+                "img_url": "https://i.pinimg.com/564x/2c/f3/83/2cf3830bf8ad6d2468ebe71119225413.jpg"
+            },
+            {
+                "name": "Jennifer Connelly",
+                "gender": "f",
+                "img_url": "https://i.pinimg.com/564x/9a/0b/d0/9a0bd02c45a44041d49952b3168babeb.jpg"
+            }
+        ],
+        "herrings": [
+            {
+                "name": "Liv Tyler",
+                "gender": "f"
+            },
+            {
+                "name": "Scarlet Johansson",
+                "gender": "f"
+            },
+            {
+                "name": "Harrison Ford",
+                "gender": "m"
+            },
+            {
+                "name": "Daniel Craig",
+                "gender": "m"
+            },
+            {
+                "name": "Russell Crowe",
+                "gender": "m"
+            }
+        ]
+    }
+]
