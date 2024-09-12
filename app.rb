@@ -5,33 +5,35 @@ require "rerun"
 require "bcrypt"
 require "sqlite3"
 require "json"
-require_relative "./components/model.rb"
+require_relative "./model.rb"
 
-# Aktiverar sessioner för att lagra användarinformation mellan förfrågningar
-key = SecureRandom.hex(32)
+# Aktiverar sessioner för att lagra användarinformation mellan requests
 enable :sessions
+# Skapar en säker, slumpmässig nyckel
+key = SecureRandom.hex(32)
 set :session_secret, key
-set :sessions, :expire_after => 2592000
+set :sessions, :expire_after => 2592000 # Loggar ut användaren efter 30 dagar
 
 before do
+  # Innan 
   response.headers["Access-Control-Allow-Origin"] = "http://localhost:4567"
   response.headers["Access-Control-Allow-Methods"] = "GET, POST"
   response.headers["Access-Control-Allow-Headers"] = "Content-Type"
 
-  protectedRoutes = ["/start", "/game"]
-  if protectedRoutes.include?(request.path_info)
-    if !session[:loggedIn]
-      redirect("/auth")
-    end
+  # Omdiregerar användaren till inloggningssidan om hen inte är inloggad och inte spelar den lokala versionen
+  protected_routes = ["/", "/game"]
+  if protected_routes.include?(request.path_info) && !session[:logged_in] && !session[:local_version]
+    redirect("/auth")
   end
 end
 
-# Om användaren besöker rotmappen, omdirigera dem till inloggningsidan
-get("/") { redirect("/auth") }
+get("/") do
+
+end
 
 # Visar inloggningsformuläret när användaren besöker /login
 get("/auth") do
-  session[:loggedIn] = nil
+  session[:logged_in] = nil
 
   if session[:error]
     error = session[:error]
@@ -50,7 +52,7 @@ post("/login") do
   status, user = loginUser(username, password)
 
   if status == 200
-    session[:loggedIn] = user
+    session[:logged_in] = user
     redirect("/start")
   end
 

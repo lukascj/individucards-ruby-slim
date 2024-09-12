@@ -3,9 +3,13 @@ require 'bcrypt'
 require 'sqlite3'
 require 'json'
 
-#Connect to the database
+DB_PATH = "./db/cards.db"
+PORT = "4568"
+
+# Koppla till databasen
 def connectToDb()
-    db = SQLite3::Database.new("./db/warcardsdb.db")
+    # if !File.exist?(DB_PATH) 
+    db = SQLite3::Database.new(DB_PATH)
     db.results_as_hash = true
     return db
 end
