@@ -9,19 +9,22 @@ body#body-start
             th Name
             th Highscore
         tbody
-          - sortedUsers[0...10].each_with_index do |user, index|
-            tr
-              td= index + 1
-              td= user["username"]
-              td= user["highscore"]
+          - if leaderboard_data.length <= 0
+            .empty No scores stored.
+          - else
+            - leaderboard_data[0...10].each_with_index do |row|
+              tr
+                td= row[:ranking]
+                td= row[:username]
+                td= row[:score]
   section#section-play
-    #user-score-recent= "Your score (recent): #{current_score}"
+    #user-score-recent= "Your recent score: #{user[:recent_play][:score]}"
     #play-container
       button#button-play[type="button" onclick="redirect('game')"] Play!
   footer
-    #username= "Your username: #{user['username']}"
-    #user-hi= "Your high-score: #{user['highscore']}"
-    #user-ranking= "Your ranking: #{user['ranking']}"
+    #username= "Your username: #{user[:name]}"
+    #user-hi= "Your high-score: #{user[:highscore]}"
+    #user-ranking= "Your ranking: #{user[:ranking]}"
 javascript:
   function redirect(destination) {
     window.location.href = '/' + destination;

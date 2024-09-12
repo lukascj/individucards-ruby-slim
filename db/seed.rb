@@ -1,17 +1,19 @@
-require_relative "../model.rb"
 require "fileutils"
 require "date"
 require "json"
 
-DB_PATH = "./cards.db"
+require_relative "../model.rb"
+
+DB_PATH = "#{__dir__}/cards.db"
 
 # Raderar db-fil
 def deleteDb(backup) 
   # Kollar att databasen finns innan den raderas
   if !File.exist?(DB_PATH)
-    raise StandardError, "DB file doesn't exist."
+    puts "DB file doesn't exist."
+    return
   end
-  
+
   # Om det ska skapas en backup, annars radera bara
   if backup
     last_slash_index = DB_PATH.rindex(".") || 0 # Index av sista snedstreck, 0 om inte finns
@@ -105,6 +107,7 @@ def seedDb()
 end
 
 def run(backup = false)
+  puts __dir__
   deleteDb(backup)
   createDb()
   seedDb()

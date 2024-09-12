@@ -1,15 +1,15 @@
-#data[data-json="#{cardsJSON}"]
+#data[data-json="#{cards_data}"]
 body#body-game
     section#section-card
         #active-card
             .card-face.front
-                img#card-photo[src="./img/class/#{randCards[0]['img']}.jpeg" alt="#{randCards[0]['name']}"]
+                img#card-photo[src=""]
             .card-face.back
-                label#card-name[for="card"] = randCards[0]['name']
+                label#card-name[for="card"]
     section#section-options
         ul#list-options
-            - randCards[0...4].shuffle.each do |card|
-                li.option = card["name"]
+            - 4.times do
+                li.option
     footer
         #timer 0
         #score-counter == 'Score: <span id="current-score">0</span>'

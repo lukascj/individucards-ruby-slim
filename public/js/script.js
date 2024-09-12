@@ -1,7 +1,6 @@
 const data_elem = document.getElementById("data");
 const cards_data = JSON.parse(data_elem.dataset.json);
-
-const other_names = [{name:'Pontus Wahlgren', kon:'m'}, {name:'Håkan Persson', kon:'m'}, {name:'Igor Rickardsson', kon:'m'}, {name:'Joel Ramberg Themelis', kon:'m'}]
+data_elem.remove()
 
 function redirect(destination) {
     window.location.href = '/' + destination;
@@ -26,7 +25,7 @@ function shuffle(array) {
     }
   
     return array;
-  }
+}
 
 function enterPerson(cards_data, other_names, n) {
 
@@ -121,7 +120,6 @@ function seeResult() {
         console.error(error);
     });
 }
-
 
 function chooseOption(guess, cards_data, other_names, n) {
 
