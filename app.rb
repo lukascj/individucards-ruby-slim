@@ -124,7 +124,7 @@ post("/login") do
     session[:logged_in] = true
     session[:user][:id] = result[:user][:id]
     session[:user][:name] = result[:user][:name]
-    session[:user][:highscore] = result[:user][:highscore]
+    session[:user][:highscore] = result[:user][:highscore] || 0
     session[:success] = "You have successfully logged in."
     redirect("/")
   end
@@ -151,7 +151,7 @@ post("/register") do
     session[:logged_in] = true
     session[:user][:id] = result[:user][:id]
     session[:user][:name] = result[:user][:name]
-    session[:user][:highscore] = result[:user][:highscore]
+    session[:user][:highscore] = result[:user][:highscore] || 0
     session[:success] = "You have successfully registered and logged in."
     redirect("/")
   end
@@ -165,7 +165,7 @@ get("/game") do
   set_id = params[:set] || 1
 
   begin
-    cards_data = fetchCards(set_id)
+    game_data = fetchGameData(set_id)
   rescue SQLite3::Exception => e
     # Omdiregera till huvudsida om hämtning av data strular
     puts "An error occurred: #{e.message}"
@@ -173,24 +173,33 @@ get("/game") do
     redirect("/")
   end
 
-  slim(:game, locals: { cards_data: JSON.stringify(cards_data) })
+  puts game_data
+  slim(:game, locals: { game_data: game_data.to_json })
 end
 
 # Hanterar spel-resultatet
 post("/game") do
   # Tillåter request body att bli läst (read)
   request.body.rewind
+  parsed_request = JSON.parse(request.body.read, symbolize_names: true)
 
-  puts "OISEYGBAIOWEBRIOWUEBGYUOBRYS"
-  puts JSON.parse(request.body.read)
-  session[:recent_play] = JSON.parse(request.body.read)
+  # Konvertera från strängar
+  parsed_request[:score] = parsed_request[:score].to_f
+  parsed_request[:set_id] = parsed_request[:set_id].to_i
 
-  if session[:recent_play][:score] > session[:highscore]
-    session[:highscore] = session[:recent_play][:score]
+  # Spara i session
+  session[:user][:recent_play] = parsed_request
+  
+  # Skicka till databasen
+  sendScore(session[:user][:id], parsed_request[:score], parsed_request[:date], parsed_request[:set_id]);
+  
+  if session[:user][:recent_play][:score] > session[:user][:highscore]
+    # Uppdatera highscore om besegrat
+    session[:user][:highscore] = session[:user][:recent_play][:score]
   end
 
   content_type :json
-  { message: "Score received successfully.", received_score: session[:recent_play][:score], status: 200 }.to_json
+  { message: "Score received successfully.", received_score: parsed_request[:score], status: 200 }.to_json
 end
 
 # För utloggning

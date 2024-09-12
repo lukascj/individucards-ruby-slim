@@ -87,7 +87,7 @@ def loginUser(username, pwd)
     return result
 end
 
-# Get the 5 highest scores, limited to one per user
+# Hämta de 10 högsta poängen, begränsade till 1 per användare
 def fetchLeaderboardData(set_id = 1)
     db = dbConn()
     query = <<-SQL 
@@ -102,21 +102,37 @@ def fetchLeaderboardData(set_id = 1)
     return leaderboard_data
 end
 
-# Get all people-cards from set, return array of cards with id, name, gender, img_url
-def fetchCardsData(set_id = 1)
+# Hämta spel-data; people & herrings
+def fetchGameData(set_id = 1)
     db = dbConn()
-    query = <<-SQL
-        SELECT *
-        FROM people
-        UNION
-        SELECT *, NULL AS img_url
-        FROM herrings
-        WHERE set_id = ?
-        ORDER BY RANDOM()
-    SQL
-    cards_data = db.execute(query, set_id)
+    
+    name = "" 
+    people = []
+    herrings = []
+
+    db.transaction do
+        query = "SELECT name FROM sets WHERE id = ?"
+        name = db.execute(query, set_id)
+
+        query = <<-SQL
+            SELECT * 
+            FROM people
+            WHERE set_id = ?
+            ORDER BY RANDOM()
+        SQL
+        people = db.execute(query, set_id)
+
+        query = <<-SQL
+            SELECT * 
+            FROM herrings
+            WHERE set_id = ?
+            ORDER BY RANDOM()
+        SQL
+        herrings = db.execute(query, set_id)
+    end
+
     db.close
-    return cards_data
+    return {id: set_id, name: name, people: people, herrings: herrings}
 end
 
 def fetchUserRanking(username, set_id = 1)
@@ -133,4 +149,15 @@ def fetchUserRanking(username, set_id = 1)
     user = db.execute(query, [username, set_id]).first
     db.close
     return user
+end
+
+def sendScore(user_id, score, date, set_id) 
+    db = dbConn()
+    query = <<-SQL
+        INSERT INTO scores (user_id, score, date, set_id)
+        VALUES (?, ?, ?, ?); 
+    SQL
+    db.execute(query, [user_id, score, date, set_id])
+    db.close
+    return
 end

@@ -68,46 +68,53 @@ def seedDb()
   SQL
   db.execute(query, ['admin', pwd_digest, 1])
 
-  # Stoppa in default sets
+  # Hämta default sets
   sets = JSON.parse(File.read(File.join(__dir__, "default_sets.json")))
   puts "Default sets data: \"#{sets}\"."
-  query = ""
-  values = []
-  # Skapar SQL-query utefter JSON-data
-  sets.each do |set|
-    query += <<-SQL
-      INSERT INTO sets (id, name)
-      VALUES (?, ?); 
-    SQL
-    values.concat([set['id'], set['name']])
 
-    set['people'].each do |person|
-      query += <<-SQL
-        INSERT INTO people (name, gender, img_url, set_id)
-        VALUES (?, ?, ?, ?); 
+  # Ser till att alla execute:s (i blocket) sker på samma gång och att allt ogörs om en misslyckas
+  db.transaction do
+    # Skapar SQL-query utefter JSON-data
+    sets.each do |set|
+      query = <<-SQL
+        INSERT INTO sets (id, name)
+        VALUES (?, ?); 
       SQL
-      values.concat([person['name'], person['gender'], person['img_url'], set['id']])
-    end
+      values = [set['id'], set['name']]
+      puts "Running query: \"#{query}\"."
+      puts "With values: \"#{values}\"."
+      db.execute(query, values)
 
-    set['herrings'].each do |herring|
-      query += <<-SQL
-        INSERT INTO herrings (name, gender, set_id)
-        VALUES (?, ?, ?); 
-      SQL
-      values.concat([herring['name'], herring['gender'], set['id']])
+      set['people'].each do |person|
+        query = <<-SQL
+          INSERT INTO people (name, gender, img_url, set_id)
+          VALUES (?, ?, ?, ?); 
+        SQL
+        values = [person['name'], person['gender'], person['img_url'], set['id']]
+        puts "Running query: \"#{query}\"."
+        puts "With values: \"#{values}\"."
+        db.execute(query, values)
+      end
+
+      set['herrings'].each do |herring|
+        query = <<-SQL
+          INSERT INTO herrings (name, gender, set_id)
+          VALUES (?, ?, ?); 
+        SQL
+        values = [herring['name'], herring['gender'], set['id']]
+        puts "Running query: \"#{query}\"."
+        puts "With values: \"#{values}\"."
+        db.execute(query, values)
+      end
     end
   end
 
-  puts "Running query: \"#{query}\"."
-  puts "Values: \"#{values}\"."
-  db.execute_batch(query, values)
   puts "Sets created."
-
+  db.close
   return
 end
 
 def run(backup = false)
-  puts __dir__
   deleteDb(backup)
   createDb()
   seedDb()

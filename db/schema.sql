@@ -8,7 +8,7 @@ CREATE TABLE users (
 CREATE TABLE scores (
     id INTEGER PRIMARY KEY,
     user_id INTEGER,
-    score INTEGER,
+    score REAL,
     date DATETIME,
     set_id INTEGER
 );

@@ -1,173 +1,242 @@
-const data_elem = document.getElementById("data");
-const cards_data = JSON.parse(data_elem.dataset.json);
-data_elem.remove()
 
-function redirect(destination) {
-    window.location.href = '/' + destination;
-}
-
-function getRandomInt(max) {
-    return Math.floor(Math.random() * max);
-}
-
-function shuffle(array) {
-    let currentIndex = array.length, randomIndex;
-  
-    // While there remain elements to shuffle.
-    while(currentIndex != 0) {
-  
-        // Pick a remaining element.
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex--;
-    
-        // And swap it with the current element.
-        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
-    }
-  
-    return array;
-}
-
-function enterPerson(cards_data, other_names, n) {
-
-    function showCard(person_data) {
-        card_html = `<div id="active-card"><div class="card-face front"><img id="card-photo" src="./img/class/${person_data.img}.jpeg" alt="${person_data.name}"></div><div class="card-face back"><label id="card-name" for="card">${person_data.name}</label></div></div>`;
-        let card_section_elem = document.getElementById("section-card");
-        card_section_elem.innerHTML = card_html;
-    }
-
-    function showOptions(cards_data, other_names, n) {
-
-        let options = [cards_data[n-1].name];
-        let options_html = "";
+// Kör då det laddats in
+document.addEventListener("DOMContentLoaded", () => {
         
-        let names = []
-        names = names.concat(cards_data.slice((n-1), -1));
-        names = names.concat(other_names);
+    // Hämta kort-data från elementet, sedan ta bort elementet
+    const data_elem = document.getElementById("data");
+    const game_data = JSON.parse(data_elem.dataset.json);
+    data_elem.remove()
 
-        let j;
-        for(let i=0; i<3; i++) {
-            j = getRandomInt(names.length);
-            while(options.includes(names[j].name, 0)) {
-                j = getRandomInt(names.length);
-            }
-            options.push(names[j].name);
-            names.splice(j, j);
-        }
+    // Timer-variabler
+    let timer_value = 0.0;
+    const timer_elem = document.getElementById("timer");
+    const pause_length = 900;
 
-        shuffle(options);
+    // Kort-element
+    const card_section_elem = document.getElementById("section-card");
+    const card_template_html = card_section_elem.innerHTML;
 
-        options.forEach(option => {
-            options_html += `<li class="option">${option}</li>`;
-        });
+    // Alternativ-element
+    const options_elems = document.querySelectorAll("#list-options > .option");
 
-        document.getElementById("list-options").innerHTML = options_html;
+    // Poäng-span
+    const score_span = document.querySelector('span#current-score');
 
-        const option_elems = document.querySelectorAll("#list-options > .option");
-        option_elems.forEach(option => {
-            option.addEventListener('click', () => {
-                chooseOption(option.textContent, cards_data, other_names, n);
-            });
-        });
+    // Egen, simpel funktion för omdiregering av användaren
+    function redirect(destination) {
+        window.location.href = '/' + destination;
     }
 
-    if(n > 1) {
-        showCard(cards_data[n-1]);
-        showOptions(cards_data, other_names, n);
-    } else {
-        const option_elems = document.querySelectorAll("#list-options > .option");
-        option_elems.forEach(option => {
-            option.addEventListener('click', () => {
-                chooseOption(option.textContent, cards_data, other_names, n);
-            });
-        });
+    // Generera random siffra från noll till och med numret under angivet värde
+    function getRandomInt(max) {
+        return Math.floor(Math.random() * max);
     }
 
-    var timer_value = 0.0;
-    var timer_elem = document.getElementById("timer");
-    timer = setInterval(() => {
-        timer_value += 0.1;
-        timer_elem.innerHTML = String(timer_value.toFixed(1));
-        if(timer_value >= 10) {
-            clearInterval(timer);
-            timer_elem.innerHTML = "10 (max)";
+    // Stoppar in sträng i en annan sträng efter substräng
+    function insertAfter(str, substr, add) {
+        const index = str.indexOf(substr);
+        if(index === -1) {
+            console.log("Error.");
+            return;
         }
-    }, 100);
-}
+        const pos = index + substr.length
+        const result = str.slice(0, pos) + add + str.slice(pos);
+        return result;
+    }
 
-function seeResult() {
-    const final_score = document.getElementById("current-score").textContent;
+    // Blanda array
+    function shuffle(array) {
+        let currentIndex = array.length, randomIndex;
     
-    fetch('http://localhost:4567/game', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ score: final_score })
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
+        // While there remain elements to shuffle.
+        while(currentIndex != 0) {
+    
+            // Pick a remaining element.
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+        
+            // And swap it with the current element.
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
         }
-        return response.json();
-    })
-    .then(data => {
-        // Handle the response data if needed
-        console.log(data);
-        if (data.status == 200 ){
-            redirect("start")
-        } 
-    })
-    .catch(error => {
-        // Handle errors here
-        console.error(error);
-    });
-}
+    
+        return array;
+    }
 
-function chooseOption(guess, cards_data, other_names, n) {
+    // Formattera datetime till vad databasen vill ha
+    function formatDateTime(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+      
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    }
 
-    function reveal(correct_name) {
+    // Påbörjar gissning av person; visar upp bild och alternativ, och sätter igång timer
+    function showPerson(game_data, i) {
 
-        function flipCard() {
-            let card_elem = document.getElementById("active-card");
-            card_elem.classList.add('flip');
+        // Uppdaterar kort-elementets bild och namn
+        function showCard(person_data) {
+            console.log(person_data)
+            let card_html = insertAfter(card_template_html, 'src="', person_data['img_url']);
+            card_html = insertAfter(card_html, '<label for="card" id="card-name">', person_data['name']);
+            card_section_elem.innerHTML = card_html;
         }
 
-        flipCard();
+        function showOptions(game_data, i) {
 
-        const option_elems = document.querySelectorAll("#list-options > .option");
-        option_elems.forEach(option => {
-            if(option.textContent !== correct_name) {
-                option.classList.add('incorrect');
-            } else {
-                option.classList.add('correct');
+            let options = [game_data['people'][i]['name']];
+            let gender = game_data['people'][i]['gender'];
+
+            // Plockar ut alla namn som är rätt kön och som inte varit rätt svar än
+            let names = game_data['people'].slice(i+1).filter(person => person['gender'] === gender).map(person => person['name']);
+            names = names.concat(game_data['herrings'].filter(person => person['gender'] === gender).map(person => person['name'])); 
+
+            // Väljer ut 3 namn till att ha som alternativ, ur names-arrayen
+            // Kommer inte bli dups tack vare splice
+            let j;
+            for(let i=0; i<3; i++) {
+                j = getRandomInt(names.length)
+                options.push(names[j]);
+                names.splice(j, 1);
             }
+
+            // Blanda options-array
+            shuffle(options);
+
+            // Går genom och uppdaterar alternativ-elementen
+            Array.from(options_elems).forEach((option_elem, index) => {
+                // Återställer elementen till matchande färg
+                option_elem.classList.remove('correct');
+                option_elem.classList.remove('incorrect');
+                // Skriver det nya namnet
+                option_elem.textContent = options[index]
+
+                // Gör alternativen klickbara
+                // Kör chooseOption vid klick
+                const handleChoice = () => {
+                    option_elem.removeEventListener('click', handleChoice);
+                    chooseOption(option_elem.textContent, game_data, i);
+                }
+                option_elem.addEventListener('click', handleChoice);
+            });
+        }
+
+        showCard(game_data['people'][i]);
+        showOptions(game_data, i);
+
+        // Aktiverar timer
+        timer = setInterval(() => {
+            timer_value += 0.1;
+            timer_elem.innerHTML = String(timer_value.toFixed(1));
+            if(timer_value >= 10) {
+                clearInterval(timer);
+                timer_elem.innerHTML = "10 (max)";
+            }
+        }, 100);
+    }
+
+    function sendResult() {
+        const final_score = score_span.textContent;
+        const date = formatDateTime(new Date());
+        
+        // Kör post-request med resultatet
+        fetch(window.location.href, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ score: final_score, date: date })
+        })
+        .then(response => {
+            console.log(response)
+            if (!response.ok) {
+                throw new Error('Faulty response.');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Hantering av respons-data?
+            console.log(data);
+            if(data.status == 200 ) {
+                redirect("") // Omdiregera till startsida
+            } 
+        })
+        .catch(error => {
+            // Hantering av errors?
+            console.error(error);
         });
     }
 
-    function updateScore(final_time) {
-        const previous_total = parseFloat(document.getElementById('current-score').textContent);
-        const new_total = previous_total + (10.0-final_time);
-        document.getElementById('current-score').innerHTML = String(new_total.toFixed(1));
-    }
+    function chooseOption(guess, game_data, i) {
 
-    let correct_name = cards_data[n-1].name;
-    reveal(correct_name);
+        function reveal(correct_name) {
 
-    var final_time = parseFloat(document.getElementById("timer").textContent);
-    clearInterval(timer);
-    if(guess !== correct_name) {
-        pause = setTimeout(() => {
-            seeResult();
-        }, 1200);
-    } else {
-        updateScore(final_time);
-        if(n >= cards_data.length) {
+            function flipCard() {
+                let card_elem = document.getElementById("active-card");
+                card_elem.classList.add('flip');
+            }
+
+            flipCard();
+
+            // Applicera klass på alternativen som anger vilken som var rätt och vilken som var fel
+            // Färg appliceras baserat på klass med CSS
+            Array.from(options_elems).forEach(option_elem => {
+                if(option_elem.textContent !== correct_name) {
+                    option_elem.classList.add('incorrect');
+                } else {
+                    option_elem.classList.add('correct');
+                }
+            });
+        }
+
+        function updateScore(final_time) {
+            const previous_total = parseFloat(score_span.textContent);
+
+            // Poäng-system utefter tid, förbättra?
+            const new_total = previous_total + (10.0 - final_time);
+
+            score_span.textContent = new_total.toFixed(1);
+        }
+
+        // Visa rätt svar
+        const correct_name = game_data['people'][i]['name'];
+        reveal(correct_name);
+
+        // Spara tiden och stäng av timern
+        const final_time = parseFloat(document.getElementById("timer").textContent);
+        clearInterval(timer);
+
+        if(guess !== correct_name) {
+            // Om inkorrekt, avsluta spelet
             pause = setTimeout(() => {
-                seeResult();
-            }, 1200);
-        }   
-        pause = setTimeout(() => {
-            enterPerson(cards_data, other_names, n+1);
-        }, 1200);
-    }
-}
+                sendResult();
+            }, pause_length);
+        } else {
+            // Om korrekt, updatera poäng
+            updateScore(final_time);
+            // Om sista person, avsluta spelet
+            if(i >= game_data['people'].length-1) {
+                pause = setTimeout(() => {
+                    sendResult();
+                }, pause_length);
+            } else {
+                // Fortsätt, index ökar med 1
+                pause = setTimeout(() => {
+                    console.log("SDUGHWIOPERBG")
+                    showPerson(game_data, i+1);
+                }, pause_length);
+            }
 
-enterPerson(cards_data, other_names, 1);
+        }
+    }
+
+    function run() {
+        // Aktuellt kort index
+        const i = 0;
+        showPerson(game_data, i);
+    }
+
+    run()
+
+});
