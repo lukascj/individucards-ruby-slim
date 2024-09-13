@@ -77,7 +77,7 @@ def loginUser(username, pwd)
         result[:error] = "Wrong username or password."
         return result
     end
-    if BCrypt::Password.new(user["pwd"]) != pwd
+    if BCrypt::Password.new(user['pwd']) != pwd
         result[:error] = "Wrong username or password."
         return result
     end
@@ -98,6 +98,7 @@ def fetchLeaderboardData(set_id = 1)
         LIMIT 10
     SQL
     leaderboard_data = db.execute(query, set_id)
+    puts "WHAT: #{leaderboard_data}"
     db.close
     return leaderboard_data
 end
@@ -158,6 +159,7 @@ def sendScore(user_id, score, date, set_id)
         VALUES (?, ?, ?, ?); 
     SQL
     db.execute(query, [user_id, score, date, set_id])
+    puts "Values: #{[user_id, score, date, set_id]}"
     db.close
     return
 end

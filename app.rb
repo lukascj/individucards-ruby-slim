@@ -78,7 +78,7 @@ get("/") do
       session[:user][:ranking] = leaderboard_data.find{|row| row[:username] == session[:user][:name]}[:ranking]
     else
       # Om tom leaderboard
-      session[:user][:ranking] = 0
+      session[:user][:ranking] = "N/A"
     end
   end
 
@@ -87,6 +87,9 @@ get("/") do
   if row_index != nil
     leaderboard_data[row_index][:highlighted] = true
   end
+
+  puts "data: #{leaderboard_data}"
+  puts "me: #{session[:user]}"
 
   locals = {
     user: session[:user],
@@ -122,9 +125,9 @@ post("/login") do
 
   if !result[:error]
     session[:logged_in] = true
-    session[:user][:id] = result[:user][:id]
-    session[:user][:name] = result[:user][:name]
-    session[:user][:highscore] = result[:user][:highscore] || 0
+    session[:user][:id] = result[:user]['id']
+    session[:user][:name] = result[:user]['name']
+    session[:user][:highscore] = result[:user]['highscore'] || 0
     session[:success] = "You have successfully logged in."
     redirect("/")
   end
@@ -149,9 +152,9 @@ post("/register") do
 
   if !result[:error]
     session[:logged_in] = true
-    session[:user][:id] = result[:user][:id]
-    session[:user][:name] = result[:user][:name]
-    session[:user][:highscore] = result[:user][:highscore] || 0
+    session[:user][:id] = result[:user]['id']
+    session[:user][:name] = result[:user]['name']
+    session[:user][:highscore] = result[:user]['highscore'] || 0
     session[:success] = "You have successfully registered and logged in."
     redirect("/")
   end
@@ -173,7 +176,6 @@ get("/game") do
     redirect("/")
   end
 
-  puts game_data
   slim(:game, locals: { game_data: game_data.to_json })
 end
 
