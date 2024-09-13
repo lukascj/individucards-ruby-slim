@@ -16,9 +16,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const card_section_elem = document.getElementById("section-card");
     const card_template_html = card_section_elem.innerHTML;
 
-    // Alternativ-element
-    const options_elems = document.querySelectorAll("#list-options > .option");
-
     // Poäng-span
     const score_span = document.querySelector('span#current-score');
 
@@ -33,14 +30,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Stoppar in sträng i en annan sträng efter substräng
-    function insertAfter(str, substr, add) {
+    function insertAfter(str, substr, insertstr) {
         const index = str.indexOf(substr);
         if(index === -1) {
-            console.log("Error.");
+            console.error("Error.");
             return;
         }
         const pos = index + substr.length
-        const result = str.slice(0, pos) + add + str.slice(pos);
+        const result = str.slice(0, pos) + insertstr + str.slice(pos);
         return result;
     }
 
@@ -79,7 +76,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Uppdaterar kort-elementets bild och namn
         function showCard(person_data) {
-            console.log(person_data)
             let card_html = insertAfter(card_template_html, 'src="', person_data['img_url']);
             card_html = insertAfter(card_html, '<label for="card" id="card-name">', person_data['name']);
             card_section_elem.innerHTML = card_html;
@@ -99,7 +95,11 @@ document.addEventListener("DOMContentLoaded", () => {
             let j;
             for(let i=0; i<3; i++) {
                 j = getRandomInt(names.length)
-                options.push(names[j]);
+                if(!names[j]) {
+                    options.push('Thanos');
+                } else {
+                    options.push(names[j]);
+                }
                 names.splice(j, 1);
             }
 
@@ -107,7 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
             shuffle(options);
 
             // Går genom och uppdaterar alternativ-elementen
-            Array.from(options_elems).forEach((option_elem, index) => {
+            Array.from(document.querySelectorAll("#list-options > .option")).forEach((option_elem, index) => {
                 // Återställer elementen till matchande färg
                 option_elem.classList.remove('correct');
                 option_elem.classList.remove('incorrect');
@@ -117,7 +117,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Gör alternativen klickbara
                 // Kör chooseOption vid klick
                 const handleChoice = () => {
-                    option_elem.removeEventListener('click', handleChoice);
                     chooseOption(option_elem.textContent, game_data, i);
                 }
                 option_elem.addEventListener('click', handleChoice);
@@ -149,7 +148,6 @@ document.addEventListener("DOMContentLoaded", () => {
             body: JSON.stringify({ score: final_score, date: date })
         })
         .then(response => {
-            console.log(response)
             if (!response.ok) {
                 throw new Error('Faulty response.');
             }
@@ -157,7 +155,6 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .then(data => {
             // Hantering av respons-data?
-            console.log(data);
             if(data.status == 200 ) {
                 redirect("") // Omdiregera till startsida
             } 
@@ -181,7 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Applicera klass på alternativen som anger vilken som var rätt och vilken som var fel
             // Färg appliceras baserat på klass med CSS
-            Array.from(options_elems).forEach(option_elem => {
+            Array.from(document.querySelectorAll("#list-options > .option")).forEach(option_elem => {
                 if(option_elem.textContent !== correct_name) {
                     option_elem.classList.add('incorrect');
                 } else {
@@ -199,13 +196,19 @@ document.addEventListener("DOMContentLoaded", () => {
             score_span.textContent = new_total.toFixed(1);
         }
 
+        // Klonar och ersätter alla alternativ-element för att ta bort event-listeners
+        Array.from(document.querySelectorAll("#list-options > .option")).forEach(option_elem => {
+            const new_elem = option_elem.cloneNode(true);
+            option_elem.parentNode.replaceChild(new_elem, option_elem);
+        });
+
         // Visa rätt svar
         const correct_name = game_data['people'][i]['name'];
         reveal(correct_name);
 
-        // Spara tiden och stäng av timern
-        const final_time = parseFloat(document.getElementById("timer").textContent);
+        // Stäng av timern och spara tiden
         clearInterval(timer);
+        const final_time = parseFloat(document.getElementById("timer").textContent);
 
         if(guess !== correct_name) {
             // Om inkorrekt, avsluta spelet
@@ -223,7 +226,6 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 // Fortsätt, index ökar med 1
                 pause = setTimeout(() => {
-                    console.log("SDUGHWIOPERBG")
                     showPerson(game_data, i+1);
                 }, pause_length);
             }
@@ -232,7 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function run() {
-        // Aktuellt kort index
+        // Aktuellt kort-index
         const i = 0;
         showPerson(game_data, i);
     }
