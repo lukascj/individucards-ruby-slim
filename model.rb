@@ -5,7 +5,7 @@ require 'json'
 
 PORT = "4568"
 IS_LOCAL = false
-DB_PATH = "./db/cards.db"
+DB_PATH = "#{__dir__}/db/cards.db"
 
 # Koppla till databasen
 def dbConn()
@@ -175,4 +175,16 @@ def sendScore(user_id, score, date, set_id = 1)
     db.execute(query, [user_id, score, date, set_id])
     db.close
     return
+end
+
+def fetchRecentPlay(user_id)
+    db = dbConn()
+    query = <<-SQL
+        SELECT score, MAX(date) AS date, set_id
+        FROM scores
+        WHERE user_id = ?
+    SQL
+    recent_play = db.execute(query, user_id).first
+    db.close
+    return recent_play
 end

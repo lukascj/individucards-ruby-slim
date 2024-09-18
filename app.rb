@@ -70,8 +70,8 @@ get("/") do
       # Hämtar din ranking
       your_row = leaderboard_data.find{|row| row['username'] == session[:user][:name]}
       session[:user][:ranking] = your_row ? your_row['ranking'] : fetchUserRanking(session[:user][:id])
-      if !session[:user][:recent_play]
-        fetchRecentPlay(session[:user][:id])
+      if !session[:user][:recent_play][:score]
+        session[:user][:recent_play] = fetchRecentPlay(session[:user][:id]).transform_keys(&:to_sym)
       end
     end
   else

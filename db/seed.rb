@@ -4,8 +4,6 @@ require "json"
 
 require_relative "../model.rb"
 
-DB_PATH = "#{__dir__}/cards.db"
-
 # Raderar db-fil
 def deleteDb(backup) 
   # Kollar att databasen finns innan den raderas
