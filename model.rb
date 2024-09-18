@@ -3,8 +3,9 @@ require 'bcrypt'
 require 'sqlite3'
 require 'json'
 
-DB_PATH = "./db/cards.db"
 PORT = "4568"
+IS_LOCAL = false
+DB_PATH = "./db/cards.db"
 
 # Koppla till databasen
 def dbConn()
@@ -33,7 +34,7 @@ end
 
 def createUser(username, pwd, pwd_re)
 
-    username = username.lowercase
+    username = username.downcase
     result = {}
 
     # Validering av givna värden
@@ -90,15 +91,30 @@ end
 # Hämta de 10 högsta poängen, begränsade till 1 per användare
 def fetchLeaderboardData(set_id = 1)
     db = dbConn()
-    query = <<-SQL 
-        SELECT DISTINCT users.name AS username, scores.score, scores.date 
-        FROM scores INNER JOIN users ON users.id = scores.user_id
-        WHERE scores.set_id = ?
-        ORDER BY scores.score DESC
-        LIMIT 10
+    query = <<-SQL
+        WITH subquery AS (
+            SELECT 
+                id AS score_id,
+                user_id,
+                MAX(score) AS score, 
+                date 
+            FROM scores
+            WHERE set_id = ?
+            GROUP BY user_id
+        )
+        SELECT 
+            subquery.score_id,
+            users.id AS user_id,
+            users.name AS username, 
+            subquery.score,
+            ROW_NUMBER() OVER (ORDER BY subquery.score DESC) AS ranking,
+            subquery.date
+        FROM users
+        INNER JOIN subquery ON users.id = subquery.user_id
+        ORDER BY subquery.score DESC
+        LIMIT 10;
     SQL
     leaderboard_data = db.execute(query, set_id)
-    puts "WHAT: #{leaderboard_data}"
     db.close
     return leaderboard_data
 end
@@ -136,30 +152,27 @@ def fetchGameData(set_id = 1)
     return {id: set_id, name: name, people: people, herrings: herrings}
 end
 
-def fetchUserRanking(username, set_id = 1)
+def fetchUserRanking(user_id, set_id = 1)
     db = dbConn()
     query = <<-SQL
-        SELECT DISTINCT users.name, 
-            ROW_NUMBER() OVER (ORDER BY scores.score DESC) AS ranking 
+        SELECT ROW_NUMBER() OVER (ORDER BY score DESC) AS ranking
         FROM scores 
-        INNER JOIN users ON users.id = scores.user_id
-        WHERE users.name = ? 
-          AND scores.set_id = ?
-        ORDER BY scores.score DESC
+        WHERE user_id = ? AND set_id = ?
+        ORDER BY score DESC
+        LIMIT 1
     SQL
-    user = db.execute(query, [username, set_id]).first
+    ranking = db.execute(query, [user_id, set_id]).first
     db.close
-    return user
+    return ranking.class == Hash ? ranking['ranking'] : nil
 end
 
-def sendScore(user_id, score, date, set_id) 
+def sendScore(user_id, score, date, set_id = 1) 
     db = dbConn()
     query = <<-SQL
         INSERT INTO scores (user_id, score, date, set_id)
         VALUES (?, ?, ?, ?); 
     SQL
     db.execute(query, [user_id, score, date, set_id])
-    puts "Values: #{[user_id, score, date, set_id]}"
     db.close
     return
 end

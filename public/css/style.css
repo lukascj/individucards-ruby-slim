@@ -137,7 +137,7 @@ button:hover, input:hover {
     height: max-content;
     padding: 2rem 2.5rem;
     background: linear-gradient(-90deg, rgb(40, 33, 83), var(--color3));
-    border-radius: 2rem 4rem;
+    border-radius: 2rem;
 }
 
 #button-play {

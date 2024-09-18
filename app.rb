@@ -8,6 +8,8 @@ require "json"
 
 require_relative "./model.rb"
 
+set :port, PORT
+
 # Aktiverar sessioner för att lagra användarinformation mellan requests
 enable :sessions
 # Skapar en säker, slumpmässig nyckel
@@ -25,9 +27,10 @@ before do
   if session[:not_init].nil?
     session[:not_init] = true
 
-    # Temporär
-    # session[:local_version] = true
-    # session[:leaderboard_data] = []
+    if IS_LOCAL
+      session[:local_version] = true
+      session[:leaderboard_data] = []
+    end
 
     session[:user] = {
       id: nil,
@@ -65,20 +68,17 @@ get("/") do
     leaderboard_data = fetchLeaderboardData() # Hash sorterad efter ranking
     if leaderboard_data.length > 0
       # Hämtar din ranking
-      your_row = leaderboard_data.find{|row| row[:username] == session[:user][:name]}
-      session[:user][:ranking] = your_row ? your_row[:ranking] : fetchUserRanking(session[:user][:name])
-    else
-      # Om tom leaderboard
-      session[:user][:ranking] = 0
+      your_row = leaderboard_data.find{|row| row['username'] == session[:user][:name]}
+      session[:user][:ranking] = your_row ? your_row['ranking'] : fetchUserRanking(session[:user][:id])
+      if !session[:user][:recent_play]
+        fetchRecentPlay(session[:user][:id])
+      end
     end
   else
     leaderboard_data = session[:leaderboard_data]
     if leaderboard_data.length > 0
       # Hämtar din ranking
       session[:user][:ranking] = leaderboard_data.find{|row| row[:username] == session[:user][:name]}[:ranking]
-    else
-      # Om tom leaderboard
-      session[:user][:ranking] = "N/A"
     end
   end
 
@@ -87,9 +87,6 @@ get("/") do
   if row_index != nil
     leaderboard_data[row_index][:highlighted] = true
   end
-
-  puts "data: #{leaderboard_data}"
-  puts "me: #{session[:user]}"
 
   locals = {
     user: session[:user],
@@ -148,7 +145,7 @@ post("/register") do
     redirect("/")
   end
   
-  result = createUser(username, params[:pwd], params[:pwd_re])
+  result = createUser(params[:username], params[:pwd], params[:pwd_re])
 
   if !result[:error]
     session[:logged_in] = true

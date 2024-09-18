@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Hämta kort-data från elementet, sedan ta bort elementet
     const data_elem = document.getElementById("data");
     const game_data = JSON.parse(data_elem.dataset.json);
-    data_elem.remove()
+    data_elem.remove();
 
     // Timer-variabler
     let timer_value = 0.0;
@@ -126,10 +126,11 @@ document.addEventListener("DOMContentLoaded", () => {
         showCard(game_data['people'][i]);
         showOptions(game_data, i);
 
-        // Aktiverar timer
+        // Aktiverar 
+        timer_value = 0.0;
         timer = setInterval(() => {
-            timer_value += 0.1;
             timer_elem.innerHTML = String(timer_value.toFixed(1));
+            timer_value += 0.1;
             if(timer_value >= 10) {
                 clearInterval(timer);
                 timer_elem.innerHTML = "10 (max)";
@@ -145,10 +146,10 @@ document.addEventListener("DOMContentLoaded", () => {
         fetch(window.location.href, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ score: final_score, date: date })
+            body: JSON.stringify({ score: final_score, date: date, set_id: game_data['id'] }) // TODO: Osäker, någon kan skicka in vad för poäng som helst
         })
         .then(response => {
-            if (!response.ok) {
+            if(!response.ok) {
                 throw new Error('Faulty response.');
             }
             return response.json();
